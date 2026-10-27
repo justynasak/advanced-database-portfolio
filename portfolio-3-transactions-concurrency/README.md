@@ -4,7 +4,7 @@
 NaijaMart, a simulated e-commerce platform (see main README). Database: `naijamart` on PostgreSQL 16. The scenario is placing an order: insert the order, insert its item, and reduce the product's stock. These steps must succeed or fail together.
 
 ## Part A: Atomicity (COMMIT and ROLLBACK)
-Script: `a_commit_rollback.sql`. Output: `a_commit_rollback_output.txt`. Screenshot: `a_commit_rollback.png`.
+Script: `a_commit_rollback.sql`. Output: `a_commit_rollback_output.txt`. Screenshot: `a_commit_rollback_1.png`, `a_commit_rollback_2.png`, `a_commit_rollback_3.png`.
 
 | Test | What was run | Result |
 |---|---|---|
@@ -32,7 +32,7 @@ Step log: `b_concurrency_steps.md`. Each experiment started from stock = 10 (res
 - **Trade-offs.** Locking (B2) blocks first and gives a correct result without retries. Snapshot isolation (B3) does not block but can fail and need a retry. The atomic update (B4) is the cheapest, but only suits simple arithmetic.
 
 ## Evidence
-`a_commit_rollback.sql`, `a_commit_rollback_output.txt`, `a_commit_rollback.png`, `b_concurrency_steps.md`, `b1_lost_update.png`, `b2_for_update_blocking.png`, `b2_result.png`, `b3_serialization_error.png`, `b4_waiting.png`, `b4_atomic_update.png`.
+`a_commit_rollback.sql`, `a_commit_rollback_output.txt`, `a_commit_rollback_1.png`, `a_commit_rollback_2.png`, `a_commit_rollback_3.png`, `b_concurrency_steps.md`, `b1_lost_update.png`, `b2_for_update_blocking.png`, `b2_result.png`, `b3_serialization_error.png`, `b4_waiting.png`, `b4_atomic_update.png`.
 
 ## Reflection notes (for the final documentation)
 - Typing a statement without `;` left psql waiting and produced a syntax error. I learned to watch the prompt: `*` means inside a transaction, `!` means aborted.
