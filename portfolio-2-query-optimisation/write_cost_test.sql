@@ -1,0 +1,3 @@
+BEGIN;
+EXPLAIN ANALYZE UPDATE orders SET status = 'PAID' WHERE status = 'PENDING';
+ROLLBACK;

@@ -1,0 +1,2 @@
+Without idx_orders_status : runs = 680.769, 777.53, 260.185 ms ; median = 680.769 ms
+With idx_orders_status : runs = 280.459, 225.418, 236.871 ms ; median = 236.871 ms
