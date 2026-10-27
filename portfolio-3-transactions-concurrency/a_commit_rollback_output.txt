@@ -1,0 +1,67 @@
+=== Setup: known starting state ===
+UPDATE 1
+ product_id | stock_qty 
+------------+-----------
+          1 |        10
+(1 row)
+
+ orders_count 
+--------------
+       100000
+(1 row)
+
+=== A1: successful order, COMMIT (stock 10 -> 8, orders +1) ===
+BEGIN
+INSERT 0 1
+INSERT 0 1
+UPDATE 1
+COMMIT
+ stock_qty 
+-----------
+         8
+(1 row)
+
+ orders_count 
+--------------
+       100001
+(1 row)
+
+=== A2: same steps, then ROLLBACK (nothing should change) ===
+BEGIN
+INSERT 0 1
+INSERT 0 1
+UPDATE 1
+ stock_inside_transaction 
+--------------------------
+                        6
+(1 row)
+
+ROLLBACK
+ stock_after_rollback 
+----------------------
+                    8
+(1 row)
+
+ orders_count 
+--------------
+       100001
+(1 row)
+
+=== A3: order for 50 units, CHECK constraint fails mid-transaction ===
+BEGIN
+INSERT 0 1
+INSERT 0 1
+psql:portfolio-3-transactions-concurrency/a_commit_rollback.sql:36: ERROR:  new row for relation "products" violates check constraint "products_stock_qty_check"
+DETAIL:  Failing row contains (1, 2, Product 1, 77708.19, -42).
+psql:portfolio-3-transactions-concurrency/a_commit_rollback.sql:37: ERROR:  current transaction is aborted, commands ignored until end of transaction block
+ROLLBACK
+ stock_after_failed_order 
+--------------------------
+                        8
+(1 row)
+
+ orders_count 
+--------------
+       100001
+(1 row)
+

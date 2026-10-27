@@ -36,3 +36,6 @@ Evidence: `tables_created.png` shows all 8 tables created.
 ## Design decisions
 - unit_price is stored in order_items on purpose. It records the price at the time of purchase, so later price changes do not alter past orders.
 - Limitation: city and state are stored together in addresses. City determines state, so a stricter design would split them into separate tables.
+
+## Tests
+- I loaded the schema and confirmed the CHECK constraint rejects a negative price
