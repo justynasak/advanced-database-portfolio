@@ -1,0 +1,106 @@
+DROP INDEX
+DROP INDEX
+psql:portfolio-2-query-optimisation/queries.sql:9: NOTICE:  index "idx_orders_status" does not exist, skipping
+DROP INDEX
+                                              QUERY PLAN                                               
+-------------------------------------------------------------------------------------------------------
+ Seq Scan on orders o  (cost=0.00..2025.00 rows=5 width=20) (actual time=0.738..13.709 rows=5 loops=1)
+   Filter: (customer_id = 4521)
+   Rows Removed by Filter: 99995
+ Planning Time: 0.885 ms
+ Execution Time: 13.904 ms
+(5 rows)
+
+CREATE INDEX
+ANALYZE
+                                                                                QUERY PLAN                                                                                
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=8540.79..8540.81 rows=10 width=48) (actual time=139.054..142.757 rows=10 loops=1)
+   ->  Sort  (cost=8540.79..8545.79 rows=2000 width=48) (actual time=139.051..142.752 rows=10 loops=1)
+         Sort Key: (sum(((oi.quantity)::numeric * oi.unit_price))) DESC
+         Sort Method: top-N heapsort  Memory: 26kB
+         ->  Finalize HashAggregate  (cost=8472.57..8497.57 rows=2000 width=48) (actual time=137.598..142.219 rows=2000 loops=1)
+               Group Key: p.product_id
+               Batches: 1  Memory Usage: 1137kB
+               ->  Gather  (cost=8232.57..8457.57 rows=2000 width=48) (actual time=130.700..136.806 rows=3830 loops=1)
+                     Workers Planned: 1
+                     Workers Launched: 1
+                     ->  Partial HashAggregate  (cost=7232.57..7257.57 rows=2000 width=48) (actual time=104.441..106.112 rows=1915 loops=2)
+                           Group Key: p.product_id
+                           Batches: 1  Memory Usage: 881kB
+                           Worker 0:  Batches: 1  Memory Usage: 881kB
+                           ->  Hash Join  (cost=2929.20..7102.41 rows=13016 width=28) (actual time=55.273..96.732 rows=10563 loops=2)
+                                 Hash Cond: (oi.product_id = p.product_id)
+                                 ->  Hash Join  (cost=2867.20..7006.16 rows=13016 width=16) (actual time=54.378..92.548 rows=10563 loops=2)
+                                       Hash Cond: (oi.order_id = o.order_id)
+                                       ->  Parallel Seq Scan on order_items oi  (cost=0.00..3675.71 rows=176471 width=20) (actual time=0.013..13.679 rows=150000 loops=2)
+                                       ->  Hash  (cost=2775.00..2775.00 rows=7376 width=4) (actual time=54.308..54.309 rows=7042 loops=2)
+                                             Buckets: 8192  Batches: 1  Memory Usage: 312kB
+                                             ->  Seq Scan on orders o  (cost=0.00..2775.00 rows=7376 width=4) (actual time=0.071..52.716 rows=7042 loops=2)
+                                                   Filter: (((status)::text <> 'CANCELLED'::text) AND (order_date >= (now() - '30 days'::interval)))
+                                                   Rows Removed by Filter: 92958
+                                 ->  Hash  (cost=37.00..37.00 rows=2000 width=16) (actual time=0.856..0.856 rows=2000 loops=2)
+                                       Buckets: 2048  Batches: 1  Memory Usage: 111kB
+                                       ->  Seq Scan on products p  (cost=0.00..37.00 rows=2000 width=16) (actual time=0.047..0.470 rows=2000 loops=2)
+ Planning Time: 1.884 ms
+ Execution Time: 143.508 ms
+(29 rows)
+
+CREATE INDEX
+ANALYZE
+                                                    QUERY PLAN                                                    
+------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2087.81..2087.82 rows=1 width=8) (actual time=26.650..26.651 rows=1 loops=1)
+   ->  Seq Scan on orders  (cost=0.00..2025.00 rows=25123 width=0) (actual time=0.035..24.667 rows=25062 loops=1)
+         Filter: ((status)::text = 'DELIVERED'::text)
+         Rows Removed by Filter: 74938
+ Planning Time: 0.440 ms
+ Execution Time: 26.906 ms
+(6 rows)
+
+CREATE INDEX
+ANALYZE
+                                                                  QUERY PLAN                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=589.23..589.24 rows=1 width=8) (actual time=6.291..6.292 rows=1 loops=1)
+   ->  Index Only Scan using idx_orders_status on orders  (cost=0.29..526.62 rows=25047 width=0) (actual time=0.071..4.292 rows=25062 loops=1)
+         Index Cond: (status = 'DELIVERED'::text)
+         Heap Fetches: 0
+ Planning Time: 0.221 ms
+ Execution Time: 6.340 ms
+(6 rows)
+
+                                                             QUERY PLAN                                                             
+------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=282.41..1370.49 rows=25047 width=16) (actual time=1.105..7.215 rows=25062 loops=1)
+   Recheck Cond: ((status)::text = 'DELIVERED'::text)
+   Heap Blocks: exact=775
+   ->  Bitmap Index Scan on idx_orders_status  (cost=0.00..276.14 rows=25047 width=0) (actual time=0.982..0.982 rows=25062 loops=1)
+         Index Cond: ((status)::text = 'DELIVERED'::text)
+ Planning Time: 0.146 ms
+ Execution Time: 8.139 ms
+(7 rows)
+
+SET
+                                                             QUERY PLAN                                                             
+------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=282.41..1370.49 rows=25047 width=16) (actual time=1.062..9.772 rows=25062 loops=1)
+   Recheck Cond: ((status)::text = 'DELIVERED'::text)
+   Heap Blocks: exact=775
+   ->  Bitmap Index Scan on idx_orders_status  (cost=0.00..276.14 rows=25047 width=0) (actual time=0.939..0.939 rows=25062 loops=1)
+         Index Cond: ((status)::text = 'DELIVERED'::text)
+ Planning Time: 0.099 ms
+ Execution Time: 10.898 ms
+(7 rows)
+
+RESET
+DROP INDEX
+                                                 QUERY PLAN                                                  
+-------------------------------------------------------------------------------------------------------------
+ Seq Scan on orders  (cost=0.00..2025.00 rows=25047 width=16) (actual time=0.014..27.029 rows=25062 loops=1)
+   Filter: ((status)::text = 'DELIVERED'::text)
+   Rows Removed by Filter: 74938
+ Planning Time: 0.226 ms
+ Execution Time: 28.097 ms
+(5 rows)
+

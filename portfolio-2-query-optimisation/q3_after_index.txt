@@ -1,0 +1,10 @@
+﻿                                                                  QUERY PLAN                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=585.69..585.70 rows=1 width=8) (actual time=4.819..4.819 rows=1 loops=1)
+   ->  Index Only Scan using idx_orders_status on orders  (cost=0.29..523.52 rows=24870 width=0) (actual time=0.181..3.298 rows=25062 loops=1)
+         Index Cond: (status = 'DELIVERED'::text)
+         Heap Fetches: 0
+ Planning Time: 1.441 ms
+ Execution Time: 5.007 ms
+(6 rows)
+

@@ -1,0 +1,10 @@
+﻿                                                    QUERY PLAN                                                    
+------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=2088.42..2088.43 rows=1 width=8) (actual time=19.464..19.465 rows=1 loops=1)
+   ->  Seq Scan on orders  (cost=0.00..2025.00 rows=25367 width=0) (actual time=0.027..18.203 rows=25062 loops=1)
+         Filter: ((status)::text = 'DELIVERED'::text)
+         Rows Removed by Filter: 74938
+ Planning Time: 1.103 ms
+ Execution Time: 19.642 ms
+(6 rows)
+

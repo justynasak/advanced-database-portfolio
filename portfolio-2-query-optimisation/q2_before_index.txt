@@ -1,0 +1,33 @@
+﻿                                                                                QUERY PLAN                                                                                
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=8539.63..8539.66 rows=10 width=48) (actual time=134.380..139.318 rows=10 loops=1)
+   ->  Sort  (cost=8539.63..8544.63 rows=2000 width=48) (actual time=134.376..139.313 rows=10 loops=1)
+         Sort Key: (sum(((oi.quantity)::numeric * oi.unit_price))) DESC
+         Sort Method: top-N heapsort  Memory: 26kB
+         ->  Finalize HashAggregate  (cost=8471.41..8496.41 rows=2000 width=48) (actual time=132.786..138.650 rows=2000 loops=1)
+               Group Key: p.product_id
+               Batches: 1  Memory Usage: 1137kB
+               ->  Gather  (cost=8231.41..8456.41 rows=2000 width=48) (actual time=128.213..134.823 rows=3870 loops=1)
+                     Workers Planned: 1
+                     Workers Launched: 1
+                     ->  Partial HashAggregate  (cost=7231.41..7256.41 rows=2000 width=48) (actual time=102.382..103.226 rows=1935 loops=2)
+                           Group Key: p.product_id
+                           Batches: 1  Memory Usage: 881kB
+                           Worker 0:  Batches: 1  Memory Usage: 881kB
+                           ->  Hash Join  (cost=2928.79..7101.83 rows=12958 width=28) (actual time=54.596..94.751 rows=10563 loops=2)
+                                 Hash Cond: (oi.product_id = p.product_id)
+                                 ->  Hash Join  (cost=2866.79..7005.75 rows=12958 width=16) (actual time=53.886..90.895 rows=10563 loops=2)
+                                       Hash Cond: (oi.order_id = o.order_id)
+                                       ->  Parallel Seq Scan on order_items oi  (cost=0.00..3675.71 rows=176471 width=20) (actual time=0.008..13.377 rows=150000 loops=2)
+                                       ->  Hash  (cost=2775.00..2775.00 rows=7343 width=4) (actual time=53.829..53.830 rows=7042 loops=2)
+                                             Buckets: 8192  Batches: 1  Memory Usage: 312kB
+                                             ->  Seq Scan on orders o  (cost=0.00..2775.00 rows=7343 width=4) (actual time=0.065..52.371 rows=7042 loops=2)
+                                                   Filter: (((status)::text <> 'CANCELLED'::text) AND (order_date >= (now() - '30 days'::interval)))
+                                                   Rows Removed by Filter: 92958
+                                 ->  Hash  (cost=37.00..37.00 rows=2000 width=16) (actual time=0.677..0.678 rows=2000 loops=2)
+                                       Buckets: 2048  Batches: 1  Memory Usage: 111kB
+                                       ->  Seq Scan on products p  (cost=0.00..37.00 rows=2000 width=16) (actual time=0.046..0.367 rows=2000 loops=2)
+ Planning Time: 2.786 ms
+ Execution Time: 140.428 ms
+(29 rows)
+
