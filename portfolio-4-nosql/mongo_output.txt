@@ -1,0 +1,142 @@
+﻿
+=== 1. Load products (attributes vary by category) ===
+products loaded: 6
+
+=== 2. Load orders (customer, address and items embedded) ===
+orders loaded: 4
+
+=== 3. Query by a category-specific attribute: phones with at least 8 GB RAM ===
+[
+  {
+    sku: 'PH-001',
+    name: 'Tecno Spark 20',
+    price: 145000,
+    attributes: {
+      ram_gb: 8,
+      storage_gb: 128
+    }
+  },
+  {
+    sku: 'PH-002',
+    name: 'Infinix Hot 40',
+    price: 132000,
+    attributes: {
+      ram_gb: 8,
+      storage_gb: 256
+    }
+  }
+]
+
+=== 4. Array attribute: products available in size XL ===
+[
+  {
+    sku: 'CL-001',
+    name: 'Ankara Shirt',
+    attributes: {
+      size: [
+        'S',
+        'M',
+        'L',
+        'XL'
+      ]
+    }
+  }
+]
+
+=== 5. Whole order in ONE read, no joins ===
+{
+  order_ref: 'ORD-1001',
+  customer: {
+    customer_id: 1,
+    name: 'Customer 1',
+    email: 'user1@naijamart.test'
+  },
+  shipping_address: {
+    street: '1 Main Street',
+    city: 'Port Harcourt',
+    state: 'Rivers'
+  },
+  items: [
+    {
+      sku: 'PH-001',
+      name: 'Tecno Spark 20',
+      quantity: 1,
+      unit_price: 145000
+    },
+    {
+      sku: 'CL-001',
+      name: 'Ankara Shirt',
+      quantity: 2,
+      unit_price: 12500
+    }
+  ],
+  status: 'PAID',
+  order_date: ISODate('2026-10-20T00:00:00.000Z'),
+  total: 170000
+}
+
+=== 6. All orders for customer 1 ===
+[
+  {
+    order_ref: 'ORD-1001',
+    status: 'PAID',
+    total: 170000
+  },
+  {
+    order_ref: 'ORD-1003',
+    status: 'DELIVERED',
+    total: 54000
+  }
+]
+
+=== 7. Aggregation: units sold and revenue per product ===
+[
+  {
+    _id: 'PH-001',
+    units: 1,
+    revenue: 145000
+  },
+  {
+    _id: 'PH-002',
+    units: 1,
+    revenue: 132000
+  },
+  {
+    _id: 'GR-001',
+    units: 1,
+    revenue: 78000
+  },
+  {
+    _id: 'CL-001',
+    units: 5,
+    revenue: 62500
+  },
+  {
+    _id: 'EL-001',
+    units: 1,
+    revenue: 36000
+  },
+  {
+    _id: 'CL-002',
+    units: 1,
+    revenue: 18000
+  }
+]
+
+=== 8. Atomic stock update with a guard (single-document operation) ===
+stock before: 40 | matched: 1 | modified: 1
+stock after: 39
+order for 1000 units | matched: 0 | modified: 0 (rejected, insufficient stock)
+stock still: 39
+
+=== 9. Index on the customer lookup used in query 6 ===
+[
+  '_id_',
+  'customer.customer_id_1'
+]
+
+=== 10. Stock per size: variant-level atomic updates on the sandals ===
+stock by size before: 40: 10 | 41: 20 | 42: 20 | 43: 10
+sell 1 x size 42 | matched: 1 | modified: 1
+sell 25 x size 40 (only 10 in stock) | matched: 0 | modified: 0 (rejected)
+stock by size after: 40: 10 | 41: 20 | 42: 19 | 43: 10
