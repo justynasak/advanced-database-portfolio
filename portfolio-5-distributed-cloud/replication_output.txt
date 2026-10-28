@@ -1,0 +1,25 @@
+﻿
+=== 1. Replica set topology ===
+replica set name   : atlas-dijrih-shard-0
+members            : 3
+  - ac-qjhqmo3-shard-00-00.wicokat.mongodb.net:27017
+  - ac-qjhqmo3-shard-00-01.wicokat.mongodb.net:27017
+  - ac-qjhqmo3-shard-00-02.wicokat.mongodb.net:27017
+current primary    : ac-qjhqmo3-shard-00-01.wicokat.mongodb.net:27017
+connected to       : ac-qjhqmo3-shard-00-01.wicokat.mongodb.net:27017
+majority needed    : 2 of 3
+failures tolerated : 1
+
+=== 2. Durable write (majority write concern) ===
+acknowledged by a majority of members: true
+
+=== 3. Read straight after write, from a secondary (eventual consistency) ===
+writes acknowledged by the primary only (w:1), each read immediately from a secondary
+stale reads (document not yet visible): 0 of 30
+
+=== 4. Which node served a secondary read ===
+served by       : ac-qjhqmo3-shard-00-00.wicokat.mongodb.net:27017
+current primary : ac-qjhqmo3-shard-00-01.wicokat.mongodb.net:27017
+(if these differ, a secondary served the read)
+
+(test collection repl_test dropped)
